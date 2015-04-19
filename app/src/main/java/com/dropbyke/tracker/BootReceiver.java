@@ -10,8 +10,7 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         context.startService(new Intent(context, GPSService.class));
-
-        //start accelerometer service
+        context.startService(new Intent(context, UploaderService.class));
 
     }
 

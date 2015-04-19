@@ -19,6 +19,7 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         startService(new Intent(this, GPSService.class));
+        startService(new Intent(this, UploaderService.class));
     }
 
     @Override

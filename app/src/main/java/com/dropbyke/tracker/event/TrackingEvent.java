@@ -1,16 +1,24 @@
 package com.dropbyke.tracker.event;
 
-import java.util.Date;
-
 public class TrackingEvent {
 
-    private final Date created;
+    private final long created;
 
     public TrackingEvent() {
-        this.created = new Date();
+        this.created = System.currentTimeMillis();
     }
 
-    public Date getCreated() {
+    public long getCreated() {
         return created;
     }
+
+    @Override
+    public String toString() {
+        return new StringBuffer()
+                .append(getClass().getSimpleName())
+                .append("{")
+                .append("created").append(":").append(" ").append(getCreated())
+                .append("}").toString();
+    }
+
 }

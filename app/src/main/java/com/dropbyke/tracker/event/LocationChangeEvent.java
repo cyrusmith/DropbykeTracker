@@ -17,4 +17,17 @@ public class LocationChangeEvent extends TrackingEvent {
     public double getLng() {
         return lng;
     }
+
+    @Override
+    public String toString() {
+        return new StringBuffer()
+                .append("LocationChangeEvent")
+                .append("{")
+                .append("created").append(":").append(" ").append(getCreated())
+                .append(", ").append(" ")
+                .append("lat").append(":").append(" ").append(lat)
+                .append(", ").append(" ")
+                .append("lng").append(":").append(" ").append(lng)
+                .append("}").toString();
+    }
 }
