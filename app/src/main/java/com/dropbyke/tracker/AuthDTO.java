@@ -11,21 +11,25 @@ public class AuthDTO implements Serializable {
 
     private final String trackerId;
     private final String bikeSerial;
-    private final String shepardPhone;
-    private final String shepardPassword;
+    private final String username;
+    private final String password;
+
+    private final UpdateDTO update;
 
     public AuthDTO(String trackerId,
                    String bikeSerial,
                    String shepardPhone,
-                   String shepardPassword) {
+                   String shepardPassword, UpdateDTO update) {
         AssertUtils.notNull(trackerId);
         AssertUtils.notNull(bikeSerial);
         AssertUtils.notNull(shepardPhone);
         AssertUtils.notNull(shepardPassword);
+        AssertUtils.notNull(update);
         this.trackerId = trackerId;
         this.bikeSerial = bikeSerial;
-        this.shepardPhone = shepardPhone;
-        this.shepardPassword = shepardPassword;
+        this.username = shepardPhone;
+        this.password = shepardPassword;
+        this.update = update;
     }
 
     public String getTrackerId() {
@@ -36,11 +40,15 @@ public class AuthDTO implements Serializable {
         return bikeSerial;
     }
 
-    public String getShepardPhone() {
-        return shepardPhone;
+    public String getUsername() {
+        return username;
     }
 
-    public String getShepardPassword() {
-        return shepardPassword;
+    public String getPassword() {
+        return password;
+    }
+
+    public UpdateDTO getUpdate() {
+        return update;
     }
 }

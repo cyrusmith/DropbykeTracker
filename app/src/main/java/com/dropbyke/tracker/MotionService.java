@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,88 +13,153 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
-import com.dropbyke.tracker.event.LocationChangeEvent;
+import com.google.gson.Gson;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MotionService extends Service implements SensorEventListener {
 
     private static final int NOTIFICATION_ID = 1;
+
+    private static final int LOCATION_TIMEOUT = 10;
+
+    public static final int MIN_UPDATE_INTERVAL = 5;
+
+    public static final String PROVIDER = LocationManager.GPS_PROVIDER;
+
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     private LocationManager mLocationManager;
     private SensorManager mSm;
 
     private boolean mIsListening = false;
 
+    private final Gson gson = new Gson();
+
     private String token;
 
-    private Executor mUploadExecutor = Executors.newSingleThreadExecutor();
+    private float[] gravity = new float[3];
 
-    private GetLocationTask {}
+    private long lastUploadTimestamp = 0;
 
-    private final Runnable uploadTask = new Runnable() {
+    private double locationAwaitTimeout = LOCATION_TIMEOUT;
+
+    private boolean isUploading;
+
+    private ExecutorService mUploadExecutor = Executors.newSingleThreadExecutor();
+    private ExecutorService mLocationGetExecutor = Executors.newSingleThreadExecutor();
+
+    private final Callable<Location> mGetLocationCallable = new Callable<Location>() {
         @Override
-        public void run() {
-            if (TextUtils.isEmpty(token)) return;
+        public Location call() throws Exception {
 
-            FutureTask<Location> task = new FutureTask<Location>(new Callable<Location>() {
-                @Override
-                public Location call() throws Exception {
-                    return null;
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicReference<Location> locRef = new AtomicReference<>();
+
+            final LocationListener locationListener = new LocationListener() {
+
+                public void onLocationChanged(final Location location) {
+                    if (location == null) return;
+                    locRef.set(location);
+                    latch.countDown();
                 }
-            });
+
+                public void onStatusChanged(final String provider, final int status, Bundle extras) {
+                }
+
+                public void onProviderEnabled(final String provider) {
+                }
+
+                public void onProviderDisabled(final String provider) {
+                    Log.e(Constants.LOG, "onProviderDisabled:" + provider);
+                    latch.countDown();
+                }
+            };
+
+            mLocationManager.requestLocationUpdates(PROVIDER, 3000, 1, locationListener, Looper.getMainLooper());
 
             try {
-                task.get();
+                latch.await((long) locationAwaitTimeout, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+                Log.e(Constants.LOG, "Could not get location, thread interrupted.");
             }
+            if (locRef.get() == null) {
+                locationAwaitTimeout = Math.ceil(locationAwaitTimeout * 1.5);
+                Log.d(Constants.LOG, "New locationAwaitTimeout = " + locationAwaitTimeout);
+            } else {
+                locationAwaitTimeout = LOCATION_TIMEOUT;
+            }
+            mLocationManager.removeUpdates(locationListener);
+
+            return locRef.get();
 
         }
     };
 
-    private final LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(final Location location) {
-            if (location == null) return;
-            new AsyncTask<Location, Void, Long>() {
-                @Override
-                protected Long doInBackground(Location... params) {
-                    final Location loc = params[0];
-                    return DropbykeTrackerApplication.db().appendEvent(new LocationChangeEvent(loc.getLatitude(), loc.getLongitude()));
+    private class UploadTask implements Callable<Boolean> {
+
+        private final double accel;
+
+        public UploadTask(double accel) {
+            this.accel = accel;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            Log.d(Constants.LOG, "UploadTask: " + accel + " " + token);
+
+            if (TextUtils.isEmpty(token)) return false;
+
+            Location location = null;
+            try {
+                location = mLocationGetExecutor.submit(mGetLocationCallable).get();
+            } catch (Exception e) {
+                StackTraceElement[] els = e.getStackTrace();
+                for (StackTraceElement el : els) {
+                    Log.e(Constants.LOG, el.getClassName() + " " + el.getMethodName() + " " + el.getLineNumber());
                 }
-            }.execute(location);
-        }
-
-        public void onStatusChanged(final String provider, final int status, Bundle extras) {
-        }
-
-        public void onProviderEnabled(final String provider) {
-            if (Log.isLoggable("Dropbyke", Log.DEBUG))
-                Log.d("Dropbyke", "onProviderEnabled:" + provider);
-
-            startForeground(NOTIFICATION_ID, buildNotificationOk());
-        }
-
-        public void onProviderDisabled(final String provider) {
-            if (Log.isLoggable("Dropbyke", Log.DEBUG)) {
-                Log.d("Dropbyke", "onProviderDisabled:" + provider);
+                Log.e(Constants.LOG, "Error getting location: " + e.getLocalizedMessage());
             }
-            startForeground(NOTIFICATION_ID, buildNotificationFail());
+
+            if (location == null) {
+                Log.e(Constants.LOG, "Location is null");
+                return false;
+            }
+
+            final UpdateDTO updateDTO = new UpdateDTO(
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    DeviceInfo.getBatteryLevel(MotionService.this),
+                    accel,
+                    System.currentTimeMillis());
+
+            if (!DeviceInfo.isOnline(MotionService.this) || !UpdateUploader.upload(updateDTO)) {
+                Log.d(Constants.LOG, "save to prefs: " + updateDTO);
+                SharedPreferences preferences = getSharedPreferences(Constants.LOG, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putString("lastupdate", gson.toJson(updateDTO));
+                return false;
+            }
+
+            return true;
         }
-    };
+    }
 
     @Override
     public void onCreate() {
@@ -115,17 +181,35 @@ public class MotionService extends Service implements SensorEventListener {
             }
         }
 
+        startForeground(NOTIFICATION_ID, buildNotificationOk());
+
+        if (!mLocationManager.isProviderEnabled(PROVIDER)) {
+            toast("GPS is disbled!!! Check your device settings", Toast.LENGTH_LONG);
+            startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            stopSelf(startId);
+            return Service.START_STICKY;
+        }
+
         if (!mIsListening) {
-            //mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 5, locationListener);
-            //mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3000, 5, locationListener);
+
             mSm.registerListener(this,
                     mSm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
                     SensorManager.SENSOR_DELAY_NORMAL);
+
 
             mIsListening = true;
         }
 
         return Service.START_STICKY;
+    }
+
+    private void toast(final String text, final int length) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MotionService.this, text, length).show();
+            }
+        });
     }
 
     private Notification buildNotificationOk() {
@@ -149,15 +233,10 @@ public class MotionService extends Service implements SensorEventListener {
         return null;
     }
 
-
-    private float[] gravity = new float[3];
-
-    public static final int MIN_UPDATE_INTERVAL = 30;
-
-    private long lastUploadTimestamp = 0;
-
     @Override
     public void onSensorChanged(SensorEvent event) {
+
+        if (isUploading) return;
 
         final float alpha = 0.8F;
 
@@ -179,10 +258,34 @@ public class MotionService extends Service implements SensorEventListener {
                 Math.pow(z, 2)));
 
         if (a > 1.0) {
+
             if (System.currentTimeMillis() - lastUploadTimestamp > MIN_UPDATE_INTERVAL * 1000) {
                 lastUploadTimestamp = System.currentTimeMillis();
-                if (!TextUtils.isEmpty(token))
-                    mUploadExecutor.execute(uploadTask);
+                if (!TextUtils.isEmpty(token)) {
+                    isUploading = true;
+                    final Future<Boolean> uploadFuture = mUploadExecutor.submit(new UploadTask(a));
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                uploadFuture.get();
+                            } catch (InterruptedException e) {
+                                Log.e(Constants.LOG, e.getLocalizedMessage());
+                            } catch (ExecutionException e) {
+                                Log.e(Constants.LOG, e.getLocalizedMessage());
+                            } finally {
+                                Log.d(Constants.LOG, "Unlock uploading");
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        isUploading = false;
+                                    }
+                                });
+                            }
+                        }
+                    }).start();
+
+                }
             }
         }
 
@@ -192,4 +295,5 @@ public class MotionService extends Service implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
 }
