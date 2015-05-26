@@ -1,4 +1,6 @@
-package com.dropbyke.tracker;
+package com.dropbyke.tracker.api;
+
+import com.dropbyke.tracker.AssertUtils;
 
 import java.io.Serializable;
 

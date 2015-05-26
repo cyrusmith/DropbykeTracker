@@ -1,4 +1,4 @@
-package com.dropbyke.tracker;
+package com.dropbyke.tracker.api;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -6,10 +6,12 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.dropbyke.tracker.AssertUtils;
+import com.dropbyke.tracker.AsyncTaskResult;
+import com.dropbyke.tracker.AuthResponseDTO;
+import com.dropbyke.tracker.Constants;
 import com.google.gson.Gson;
 
-
-import org.apache.commons.codec.binary.Base64;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -19,7 +21,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**

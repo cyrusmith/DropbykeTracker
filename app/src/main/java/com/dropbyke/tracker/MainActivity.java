@@ -17,6 +17,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.dropbyke.tracker.api.AuthDTO;
+import com.dropbyke.tracker.api.AuthTask;
+import com.dropbyke.tracker.api.TokenDTO;
+import com.dropbyke.tracker.api.UpdateDTO;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,16 +75,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
-        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (!mLocationManager.isProviderEnabled(Constants.LOCATION_PROVIDER)) {
             toast("GPS is disbled!!! Check your device settings", Toast.LENGTH_LONG);
             startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             return;
         }
 
-        mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        mLocation = mLocationManager.getLastKnownLocation(Constants.LOCATION_PROVIDER);
         if (mLocation == null) {
             showProgress("Getting your location");
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 1, locationListener);
+            mLocationManager.requestLocationUpdates(Constants.LOCATION_PROVIDER, 3000, 1, locationListener);
         }
 
     }
@@ -181,7 +186,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     txtShepardPassword.setText("");
                 }
                 Intent intent = new Intent(MainActivity.this, MotionService.class);
-                intent.putExtra("token", tokenDTO.getToken());
+                intent.putExtra("trackerInfo", new TrackerInfoDTO(tokenDTO.getToken(), trackerId));
                 startService(intent);
             }
         }.execute(new AuthDTO(

@@ -18,12 +18,14 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.dropbyke.tracker.api.UpdateDTO;
+import com.dropbyke.tracker.api.UpdateUploader;
 import com.google.gson.Gson;
 
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -41,8 +43,6 @@ public class MotionService extends Service implements SensorEventListener {
 
     public static final int MIN_UPDATE_INTERVAL = 5;
 
-    public static final String PROVIDER = LocationManager.GPS_PROVIDER;
-
     private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     private LocationManager mLocationManager;
@@ -52,7 +52,7 @@ public class MotionService extends Service implements SensorEventListener {
 
     private final Gson gson = new Gson();
 
-    private String token;
+    private TrackerInfoDTO mTrackerInfo;
 
     private float[] gravity = new float[3];
 
@@ -62,7 +62,7 @@ public class MotionService extends Service implements SensorEventListener {
 
     private boolean isUploading;
 
-    private ExecutorService mUploadExecutor = Executors.newSingleThreadExecutor();
+    private ExecutorService mUploadPrepareExecutor = Executors.newSingleThreadExecutor();
     private ExecutorService mLocationGetExecutor = Executors.newSingleThreadExecutor();
 
     private final Callable<Location> mGetLocationCallable = new Callable<Location>() {
@@ -92,7 +92,7 @@ public class MotionService extends Service implements SensorEventListener {
                 }
             };
 
-            mLocationManager.requestLocationUpdates(PROVIDER, 3000, 1, locationListener, Looper.getMainLooper());
+            mLocationManager.requestLocationUpdates(Constants.LOCATION_PROVIDER, 3000, 1, locationListener, Looper.getMainLooper());
 
             try {
                 latch.await((long) locationAwaitTimeout, TimeUnit.SECONDS);
@@ -122,9 +122,9 @@ public class MotionService extends Service implements SensorEventListener {
 
         @Override
         public Boolean call() throws Exception {
-            Log.d(Constants.LOG, "UploadTask: " + accel + " " + token);
+            Log.d(Constants.LOG, "UploadTask: " + accel + " " + mTrackerInfo);
 
-            if (TextUtils.isEmpty(token)) return false;
+            if (mTrackerInfo == null) return false;
 
             Location location = null;
             try {
@@ -149,7 +149,7 @@ public class MotionService extends Service implements SensorEventListener {
                     accel,
                     System.currentTimeMillis());
 
-            if (!DeviceInfo.isOnline(MotionService.this) || !UpdateUploader.upload(updateDTO)) {
+            if (!DeviceInfo.isOnline(MotionService.this) || !UpdateUploader.upload(mTrackerInfo.getToken(), mTrackerInfo.getTrackerId(), updateDTO)) {
                 Log.d(Constants.LOG, "save to prefs: " + updateDTO);
                 SharedPreferences preferences = getSharedPreferences(Constants.LOG, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
@@ -174,16 +174,16 @@ public class MotionService extends Service implements SensorEventListener {
         if (intent != null) {
             Bundle extras = intent.getExtras();
             if (extras != null) {
-                String token = extras.getString("token");
-                if (!TextUtils.isEmpty(token)) {
-                    this.token = token;
+                Serializable trackerInfoSer = extras.getSerializable("trackerInfo");
+                if ((trackerInfoSer instanceof TrackerInfoDTO)) {
+                    mTrackerInfo = (TrackerInfoDTO) trackerInfoSer;
                 }
             }
         }
 
         startForeground(NOTIFICATION_ID, buildNotificationOk());
 
-        if (!mLocationManager.isProviderEnabled(PROVIDER)) {
+        if (!mLocationManager.isProviderEnabled(Constants.LOCATION_PROVIDER)) {
             toast("GPS is disbled!!! Check your device settings", Toast.LENGTH_LONG);
             startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             stopSelf(startId);
@@ -261,9 +261,9 @@ public class MotionService extends Service implements SensorEventListener {
 
             if (System.currentTimeMillis() - lastUploadTimestamp > MIN_UPDATE_INTERVAL * 1000) {
                 lastUploadTimestamp = System.currentTimeMillis();
-                if (!TextUtils.isEmpty(token)) {
+                if (mTrackerInfo != null) {
                     isUploading = true;
-                    final Future<Boolean> uploadFuture = mUploadExecutor.submit(new UploadTask(a));
+                    final Future<Boolean> uploadFuture = mUploadPrepareExecutor.submit(new UploadTask(a));
                     new Thread(new Runnable() {
                         @Override
                         public void run() {

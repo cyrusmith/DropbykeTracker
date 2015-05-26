@@ -1,5 +1,7 @@
 package com.dropbyke.tracker;
 
+import com.dropbyke.tracker.api.TokenDTO;
+
 /**
  * Created by cyrusmith on 25.05.15.
  */
