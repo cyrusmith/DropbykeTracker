@@ -13,16 +13,19 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.dropbyke.tracker.api.UpdateDTO;
-import com.dropbyke.tracker.api.UpdateUploader;
+import com.dropbyke.tracker.api.API;
+import com.dropbyke.tracker.ui.MainActivity;
 import com.google.gson.Gson;
 
 import java.io.Serializable;
@@ -43,6 +46,12 @@ public class MotionService extends Service implements SensorEventListener {
 
     public static final int MIN_UPDATE_INTERVAL = 5;
 
+    public class MotionServiceBinder extends Binder {
+        public MotionService getService() {
+            return MotionService.this;
+        }
+    }
+
     private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     private LocationManager mLocationManager;
@@ -51,8 +60,6 @@ public class MotionService extends Service implements SensorEventListener {
     private boolean mIsListening = false;
 
     private final Gson gson = new Gson();
-
-    private TrackerInfoDTO mTrackerInfo;
 
     private float[] gravity = new float[3];
 
@@ -114,17 +121,15 @@ public class MotionService extends Service implements SensorEventListener {
 
     private class UploadTask implements Callable<Boolean> {
 
-        private final double accel;
+        private final String trackerId;
 
-        public UploadTask(double accel) {
-            this.accel = accel;
+        public UploadTask(String trackerId) {
+            AssertUtils.notNull(trackerId);
+            this.trackerId = trackerId;
         }
 
         @Override
         public Boolean call() throws Exception {
-            Log.d(Constants.LOG, "UploadTask: " + accel + " " + mTrackerInfo);
-
-            if (mTrackerInfo == null) return false;
 
             Location location = null;
             try {
@@ -146,18 +151,13 @@ public class MotionService extends Service implements SensorEventListener {
                     location.getLatitude(),
                     location.getLongitude(),
                     DeviceInfo.getBatteryLevel(MotionService.this),
-                    accel,
                     System.currentTimeMillis());
 
-            if (!DeviceInfo.isOnline(MotionService.this) || !UpdateUploader.upload(mTrackerInfo.getToken(), mTrackerInfo.getTrackerId(), updateDTO)) {
-                Log.d(Constants.LOG, "save to prefs: " + updateDTO);
-                SharedPreferences preferences = getSharedPreferences(Constants.LOG, Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putString("lastupdate", gson.toJson(updateDTO));
-                return false;
+            if (!TextUtils.isEmpty(trackerId) && DeviceInfo.isOnline(MotionService.this)) {
+                return API.upload(this.trackerId, updateDTO);
             }
 
-            return true;
+            return false;
         }
     }
 
@@ -170,16 +170,6 @@ public class MotionService extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        if (intent != null) {
-            Bundle extras = intent.getExtras();
-            if (extras != null) {
-                Serializable trackerInfoSer = extras.getSerializable("trackerInfo");
-                if ((trackerInfoSer instanceof TrackerInfoDTO)) {
-                    mTrackerInfo = (TrackerInfoDTO) trackerInfoSer;
-                }
-            }
-        }
 
         startForeground(NOTIFICATION_ID, buildNotificationOk());
 
@@ -230,7 +220,7 @@ public class MotionService extends Service implements SensorEventListener {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return new MotionServiceBinder();
     }
 
     @Override
@@ -261,9 +251,10 @@ public class MotionService extends Service implements SensorEventListener {
 
             if (System.currentTimeMillis() - lastUploadTimestamp > MIN_UPDATE_INTERVAL * 1000) {
                 lastUploadTimestamp = System.currentTimeMillis();
-                if (mTrackerInfo != null) {
+                final String trackerId = readTrackerId();
+                if (!TextUtils.isEmpty(trackerId)) {
                     isUploading = true;
-                    final Future<Boolean> uploadFuture = mUploadPrepareExecutor.submit(new UploadTask(a));
+                    final Future<Boolean> uploadFuture = mUploadPrepareExecutor.submit(new UploadTask(trackerId));
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -294,6 +285,12 @@ public class MotionService extends Service implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    private String readTrackerId() {
+        return getApplicationContext()
+                .getSharedPreferences(Constants.PREFS, MODE_PRIVATE)
+                .getString(Constants.TRACKER_ID, null);
     }
 
 }

@@ -1,0 +1,200 @@
+OpenJDK 64-Bit Server VM warning: ignoring option MaxPermSize=350m; support was removed in 8.0
+Failed to instantiate [ch.qos.logback.classic.LoggerContext]
+Reported exception:
+org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.encoder.PatternLayoutEncoder
+ @ line -1, column -1.
+Script1.groovy: 21: unable to resolve class org.jetbrains.plugins.gradle.util.GradleLog
+ @ line 21, column 1.
+   import org.jetbrains.plugins.gradle.util.GradleLog
+   ^
+
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: 22: unable to resolve class ch.qos.logback.classic.Level
+ @ line 22, column 1.
+   import static ch.qos.logback.classic.Level.DEBUG
+   ^
+
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+Script1.groovy: -1: unable to resolve class ch.qos.logback.classic.Level
+ @ line -1, column -1.
+12 errors
+
+	at org.codehaus.groovy.control.ErrorCollector.failIfErrors(ErrorCollector.java:309)
+	at org.codehaus.groovy.control.CompilationUnit.applyToSourceUnits(CompilationUnit.java:938)
+	at org.codehaus.groovy.control.CompilationUnit.doPhaseOperation(CompilationUnit.java:585)
+	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:534)
+	at groovy.lang.GroovyClassLoader.doParseClass(GroovyClassLoader.java:286)
+	at groovy.lang.GroovyClassLoader.parseClass(GroovyClassLoader.java:259)
+	at groovy.lang.GroovyShell.parseClass(GroovyShell.java:674)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:686)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:722)
+	at groovy.lang.GroovyShell.parse(GroovyShell.java:713)
+	at groovy.lang.GroovyShell$parse.call(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:45)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:108)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:116)
+	at ch.qos.logback.classic.gaffer.GafferConfigurator.run(GafferConfigurator.groovy:58)
+	at ch.qos.logback.classic.gaffer.GafferConfigurator$run.callCurrent(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCallCurrent(CallSiteArray.java:49)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:133)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:141)
+	at ch.qos.logback.classic.gaffer.GafferConfigurator.run(GafferConfigurator.groovy:40)
+	at ch.qos.logback.classic.gaffer.GafferUtil.runGafferConfiguratorOn(GafferUtil.java:43)
+	at ch.qos.logback.classic.util.ContextInitializer.configureByResource(ContextInitializer.java:65)
+	at ch.qos.logback.classic.util.ContextInitializer.autoConfig(ContextInitializer.java:148)
+	at org.slf4j.impl.StaticLoggerBinder.init(StaticLoggerBinder.java:85)
+	at org.slf4j.impl.StaticLoggerBinder.<clinit>(StaticLoggerBinder.java:55)
+	at org.slf4j.LoggerFactory.bind(LoggerFactory.java:129)
+	at org.slf4j.LoggerFactory.performInitialization(LoggerFactory.java:108)
+	at org.slf4j.LoggerFactory.getILoggerFactory(LoggerFactory.java:302)
+	at org.slf4j.LoggerFactory.getLogger(LoggerFactory.java:276)
+	at org.slf4j.LoggerFactory.getLogger(LoggerFactory.java:288)
+	at org.gradle.tooling.internal.consumer.loader.DefaultToolingImplementationLoader.<clinit>(DefaultToolingImplementationLoader.java:41)
+	at org.gradle.tooling.internal.consumer.ConnectorServices$ConnectorServiceRegistry.createToolingImplementationLoader(ConnectorServices.java:86)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:63)
+	at org.gradle.internal.service.DefaultServiceRegistry.invoke(DefaultServiceRegistry.java:328)
+	at org.gradle.internal.service.DefaultServiceRegistry.access$1200(DefaultServiceRegistry.java:58)
+	at org.gradle.internal.service.DefaultServiceRegistry$FactoryMethodService.invokeMethod(DefaultServiceRegistry.java:641)
+	at org.gradle.internal.service.DefaultServiceRegistry$FactoryService.create(DefaultServiceRegistry.java:597)
+	at org.gradle.internal.service.DefaultServiceRegistry$ManagedObjectProvider.getInstance(DefaultServiceRegistry.java:439)
+	at org.gradle.internal.service.DefaultServiceRegistry$SingletonService.get(DefaultServiceRegistry.java:479)
+	at org.gradle.internal.service.DefaultServiceRegistry$FactoryService.assembleParameters(DefaultServiceRegistry.java:607)
+	at org.gradle.internal.service.DefaultServiceRegistry$FactoryService.create(DefaultServiceRegistry.java:596)
+	at org.gradle.internal.service.DefaultServiceRegistry$ManagedObjectProvider.getInstance(DefaultServiceRegistry.java:439)
+	at org.gradle.internal.service.DefaultServiceRegistry$SingletonService.get(DefaultServiceRegistry.java:479)
+	at org.gradle.internal.service.DefaultServiceRegistry$FactoryService.assembleParameters(DefaultServiceRegistry.java:607)
+	at org.gradle.internal.service.DefaultServiceRegistry$FactoryService.create(DefaultServiceRegistry.java:596)
+	at org.gradle.internal.service.DefaultServiceRegistry$ManagedObjectProvider.getInstance(DefaultServiceRegistry.java:439)
+	at org.gradle.internal.service.DefaultServiceRegistry$SingletonService.get(DefaultServiceRegistry.java:479)
+	at org.gradle.internal.service.DefaultServiceRegistry.getFactory(DefaultServiceRegistry.java:316)
+	at org.gradle.tooling.internal.consumer.ConnectorServices.createConnector(ConnectorServices.java:36)
+	at org.gradle.tooling.GradleConnector.newConnector(GradleConnector.java:64)
+	at org.jetbrains.plugins.gradle.service.project.GradleExecutionHelper.getConnection(GradleExecutionHelper.java:311)
+	at org.jetbrains.plugins.gradle.service.project.GradleExecutionHelper.execute(GradleExecutionHelper.java:212)
+	at com.android.tools.idea.gradle.invoker.GradleTasksExecutor.invokeGradleTasks(GradleTasksExecutor.java:396)
+	at com.android.tools.idea.gradle.invoker.GradleTasksExecutor.run(GradleTasksExecutor.java:212)
+	at com.intellij.openapi.progress.impl.CoreProgressManager$TaskRunnable.run(CoreProgressManager.java:563)
+	at com.intellij.openapi.progress.impl.CoreProgressManager$2.run(CoreProgressManager.java:152)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.registerIndicatorAndRun(CoreProgressManager.java:452)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.executeProcessUnderProgress(CoreProgressManager.java:402)
+	at com.intellij.openapi.progress.impl.ProgressManagerImpl.executeProcessUnderProgress(ProgressManagerImpl.java:54)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.runProcess(CoreProgressManager.java:137)
+	at com.intellij.openapi.progress.impl.ProgressManagerImpl$1.run(ProgressManagerImpl.java:126)
+	at com.intellij.openapi.application.impl.ApplicationImpl$8.run(ApplicationImpl.java:405)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+	at org.jetbrains.ide.PooledThreadExecutor$1$1.run(PooledThreadExecutor.java:56)
+17:09:09.138 [Connection worker] DEBUG o.g.t.i.provider.DefaultConnection - Tooling API provider 2.2.1 created.
+17:09:09.805 [Connection worker] DEBUG o.g.t.i.provider.ProviderConnection - Configuring logging to level: INFO
+Tooling API is using target Gradle version: 2.2.1.
+Starting Gradle daemon
+Starting process 'command '/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java''. Working directory: /home/cyrusmith/AndroidStudioProjects/DropbykeTracker Command: /usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java -version
+Successfully started process 'command '/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java''
+Starting daemon process: workingDir = /home/cyrusmith/.gradle/daemon/2.2.1, daemonArgs: [/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java, -XX:MaxPermSize=256m, -XX:+HeapDumpOnOutOfMemoryError, -Xmx1024m, -Dfile.encoding=UTF-8, -Duser.country=US, -Duser.language=en, -Duser.variant, -cp, /home/cyrusmith/Soft/android-studio/gradle/gradle-2.2.1/lib/gradle-launcher-2.2.1.jar, org.gradle.launcher.daemon.bootstrap.GradleDaemon, 2.2.1, /home/cyrusmith/.gradle/daemon, 10800000, 9e205374-4e11-4fba-86e7-c823a503c0ee, -XX:MaxPermSize=256m, -XX:+HeapDumpOnOutOfMemoryError, -Xmx1024m, -Dfile.encoding=UTF-8, -Duser.country=US, -Duser.language=en, -Duser.variant]
+Starting process 'Gradle build daemon'. Working directory: /home/cyrusmith/.gradle/daemon/2.2.1 Command: /usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Xmx1024m -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant -cp /home/cyrusmith/Soft/android-studio/gradle/gradle-2.2.1/lib/gradle-launcher-2.2.1.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 2.2.1 /home/cyrusmith/.gradle/daemon 10800000 9e205374-4e11-4fba-86e7-c823a503c0ee -XX:MaxPermSize=256m -XX:+HeapDumpOnOutOfMemoryError -Xmx1024m -Dfile.encoding=UTF-8 -Duser.country=US -Duser.language=en -Duser.variant
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 0.645 secs.
+Connected to daemon DaemonInfo{pid=14425, address=[250ff67b-371c-4bab-9652-7357818a2727 port:43930, addresses:[/0:0:0:0:0:0:0:1%lo, /127.0.0.1]], idle=false, context=DefaultDaemonContext[uid=9e205374-4e11-4fba-86e7-c823a503c0ee,javaHome=/usr/lib/jvm/java-8-openjdk-amd64,daemonRegistryDir=/home/cyrusmith/.gradle/daemon,pid=14425,idleTimeout=10800000,daemonOpts=-XX:MaxPermSize=256m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx1024m,-Dfile.encoding=UTF-8,-Duser.country=US,-Duser.language=en,-Duser.variant]}. Dispatching request Build{id=1b820b4c-3ba2-4ef4-853e-2ccbbc8b05c6.1, currentDir=/home/cyrusmith/AndroidStudioProjects/DropbykeTracker}.
+Configuration on demand is an incubating feature.
+:app:clean
+:app:preBuild UP-TO-DATE
+:app:preDebugBuild UP-TO-DATE
+:app:checkDebugManifest
+:app:preReleaseBuild UP-TO-DATE
+:app:prepareComAndroidSupportSupportV42103Library
+:app:prepareDebugDependencies
+:app:compileDebugAidl
+:app:compileDebugRenderscript
+:app:generateDebugBuildConfig
+:app:generateDebugAssets UP-TO-DATE
+:app:mergeDebugAssets
+:app:generateDebugResValues UP-TO-DATE
+:app:generateDebugResources
+:app:mergeDebugResources
+:app:processDebugManifest
+Warning: /home/cyrusmith/AndroidStudioProjects/DropbykeTracker/app/src/main/AndroidManifest.xml:9:5 Warning:
+	Element uses-permission#android.permission.ACCESS_FINE_LOCATION at AndroidManifest.xml:9:5 duplicated with element declared at AndroidManifest.xml:5:5
+/home/cyrusmith/AndroidStudioProjects/DropbykeTracker/app/src/main/AndroidManifest.xml:9:5 Warning:
+	Element uses-permission#android.permission.ACCESS_FINE_LOCATION at AndroidManifest.xml:9:5 duplicated with element declared at AndroidManifest.xml:5:5
+:app:processDebugResources
+:app:generateDebugSources
+:app:preDebugAndroidTestBuild UP-TO-DATE
+:app:prepareDebugAndroidTestDependencies
+:app:compileDebugAndroidTestAidl
+:app:processDebugAndroidTestManifest
+:app:compileDebugAndroidTestRenderscript
+:app:generateDebugAndroidTestBuildConfig
+:app:generateDebugAndroidTestAssets UP-TO-DATE
+:app:mergeDebugAndroidTestAssets
+:app:generateDebugAndroidTestResValues UP-TO-DATE
+:app:generateDebugAndroidTestResources
+:app:mergeDebugAndroidTestResources
+:app:processDebugAndroidTestResources
+:app:generateDebugAndroidTestSources
+
+BUILD SUCCESSFUL
+
+Total time: 11.967 secs
+Received result DaemonCommandResult[type=Success, value=org.gradle.tooling.internal.provider.BuildActionResult@554402ce] from daemon DaemonInfo{pid=14425, address=[250ff67b-371c-4bab-9652-7357818a2727 port:43930, addresses:[/0:0:0:0:0:0:0:1%lo, /127.0.0.1]], idle=false, context=DefaultDaemonContext[uid=9e205374-4e11-4fba-86e7-c823a503c0ee,javaHome=/usr/lib/jvm/java-8-openjdk-amd64,daemonRegistryDir=/home/cyrusmith/.gradle/daemon,pid=14425,idleTimeout=10800000,daemonOpts=-XX:MaxPermSize=256m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx1024m,-Dfile.encoding=UTF-8,-Duser.country=US,-Duser.language=en,-Duser.variant]}.
+Tooling API is using target Gradle version: 2.2.1.
+Connected to daemon DaemonInfo{pid=14425, address=[250ff67b-371c-4bab-9652-7357818a2727 port:43930, addresses:[/0:0:0:0:0:0:0:1%lo, /127.0.0.1]], idle=true, context=DefaultDaemonContext[uid=9e205374-4e11-4fba-86e7-c823a503c0ee,javaHome=/usr/lib/jvm/java-8-openjdk-amd64,daemonRegistryDir=/home/cyrusmith/.gradle/daemon,pid=14425,idleTimeout=10800000,daemonOpts=-XX:MaxPermSize=256m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx1024m,-Dfile.encoding=UTF-8,-Duser.country=US,-Duser.language=en,-Duser.variant]}. Dispatching request Build{id=bf2b0645-c2d0-44fd-9f0d-29330cce3d75.1, currentDir=/home/cyrusmith/AndroidStudioProjects/DropbykeTracker}.
+Configuration on demand is an incubating feature.
+:app:preBuild UP-TO-DATE
+:app:preReleaseBuild UP-TO-DATE
+:app:checkReleaseManifest
+:app:preDebugBuild UP-TO-DATE
+:app:prepareComAndroidSupportSupportV42103Library UP-TO-DATE
+:app:prepareReleaseDependencies
+:app:compileReleaseAidl
+:app:compileReleaseRenderscript
+:app:generateReleaseBuildConfig
+:app:generateReleaseAssets UP-TO-DATE
+:app:mergeReleaseAssets
+:app:generateReleaseResValues UP-TO-DATE
+:app:generateReleaseResources
+:app:mergeReleaseResources
+:app:processReleaseManifest
+Warning: /home/cyrusmith/AndroidStudioProjects/DropbykeTracker/app/src/main/AndroidManifest.xml:9:5 Warning:
+	Element uses-permission#android.permission.ACCESS_FINE_LOCATION at AndroidManifest.xml:9:5 duplicated with element declared at AndroidManifest.xml:5:5
+/home/cyrusmith/AndroidStudioProjects/DropbykeTracker/app/src/main/AndroidManifest.xml:9:5 Warning:
+	Element uses-permission#android.permission.ACCESS_FINE_LOCATION at AndroidManifest.xml:9:5 duplicated with element declared at AndroidManifest.xml:5:5
+:app:processReleaseResources
+:app:generateReleaseSources
+:app:compileReleaseJava
+:app:lintVitalRelease
+:app:compileReleaseNdk UP-TO-DATE
+:app:preDexRelease
+:app:dexRelease
+:app:processReleaseJavaRes UP-TO-DATE
+:app:validateExternalOverrideSigning
+:app:packageRelease
+:app:zipalignRelease
+:app:assembleRelease
+
+BUILD SUCCESSFUL
+
+Total time: 19.451 secs
+Received result DaemonCommandResult[type=Success, value=org.gradle.tooling.internal.provider.BuildActionResult@134293de] from daemon DaemonInfo{pid=14425, address=[250ff67b-371c-4bab-9652-7357818a2727 port:43930, addresses:[/0:0:0:0:0:0:0:1%lo, /127.0.0.1]], idle=true, context=DefaultDaemonContext[uid=9e205374-4e11-4fba-86e7-c823a503c0ee,javaHome=/usr/lib/jvm/java-8-openjdk-amd64,daemonRegistryDir=/home/cyrusmith/.gradle/daemon,pid=14425,idleTimeout=10800000,daemonOpts=-XX:MaxPermSize=256m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx1024m,-Dfile.encoding=UTF-8,-Duser.country=US,-Duser.language=en,-Duser.variant]}.
+[ 345405]   WARN - api.vfs.impl.local.FileWatcher - Watcher terminated with exit code 0 
