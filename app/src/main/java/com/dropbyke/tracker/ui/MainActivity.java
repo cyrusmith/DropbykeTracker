@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dropbyke.tracker.Constants;
@@ -33,6 +35,7 @@ import java.util.List;
 public class MainActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<List<TrackerDTO>> {
 
     private Button mRestartBtn;
+    private TextView mActiveTrackerText;
 
     private ProgressDialog dialog;
 
@@ -41,6 +44,8 @@ public class MainActivity extends FragmentActivity implements LoaderManager.Load
     private Location mLocation = null;
 
     private TrackersSpinnerAdapter mTrackersAdapter = null;
+
+    private Spinner mSpinner;
 
     private MotionService mMotionService;
 
@@ -54,6 +59,7 @@ public class MainActivity extends FragmentActivity implements LoaderManager.Load
             MotionService.MotionServiceBinder binder = (MotionService.MotionServiceBinder) service;
             mMotionService = binder.getService();
             mMotionServiceBound = true;
+            mRestartBtn.setEnabled(!mMotionService.isListening());
         }
 
         @Override
@@ -90,6 +96,7 @@ public class MainActivity extends FragmentActivity implements LoaderManager.Load
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mRestartBtn = (Button) findViewById(R.id.restart_button);
+        mActiveTrackerText = (TextView) findViewById(R.id.active_tracker_text);
         mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
         if (!mLocationManager.isProviderEnabled(Constants.LOCATION_PROVIDER)) {
@@ -112,20 +119,21 @@ public class MainActivity extends FragmentActivity implements LoaderManager.Load
                     return;
                 }
                 startService(new Intent(getApplicationContext(), MotionService.class));
+                mRestartBtn.setEnabled(false);
             }
         });
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        mSpinner = (Spinner) findViewById(R.id.spinner);
 
         mTrackersAdapter = new TrackersSpinnerAdapter(this, android.R.layout.simple_spinner_item, new ArrayList<TrackerDTO>());
 
         mTrackersAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        spinner.setAdapter(mTrackersAdapter);
+        mSpinner.setAdapter(mTrackersAdapter);
 
         getSupportLoaderManager().initLoader(0, null, this);
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -135,6 +143,8 @@ public class MainActivity extends FragmentActivity implements LoaderManager.Load
                         .edit()
                         .putString(Constants.TRACKER_ID, trackerDTO.getId())
                         .commit();
+
+                mActiveTrackerText.setText(trackerDTO.getName());
 
             }
 
@@ -209,8 +219,17 @@ public class MainActivity extends FragmentActivity implements LoaderManager.Load
     @Override
     public void onLoadFinished(Loader<List<TrackerDTO>> loader, List<TrackerDTO> data) {
         mTrackersAdapter.clear();
+        String trackerId = getTrackerId();
+        int pos = 0;
         for (TrackerDTO trackerDTO : data) {
             mTrackersAdapter.add(trackerDTO);
+            if (!TextUtils.isEmpty(trackerId)
+                    && !TextUtils.isEmpty(trackerDTO.getId())
+                    && trackerId.equals(trackerDTO.getId())) {
+                mSpinner.setSelection(pos);
+                mActiveTrackerText.setText(trackerDTO.getName());
+            }
+            pos++;
         }
         mTrackersAdapter.notifyDataSetChanged();
     }
@@ -219,6 +238,12 @@ public class MainActivity extends FragmentActivity implements LoaderManager.Load
     public void onLoaderReset(Loader<List<TrackerDTO>> loader) {
         mTrackersAdapter.clear();
         mTrackersAdapter.notifyDataSetChanged();
+    }
+
+    private String getTrackerId() {
+        return getApplicationContext()
+                .getSharedPreferences(Constants.PREFS, MODE_PRIVATE)
+                .getString(Constants.TRACKER_ID, null);
     }
 
 }

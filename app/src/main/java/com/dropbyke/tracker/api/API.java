@@ -89,7 +89,7 @@ public class API {
             urlConnection.setConnectTimeout(10000);
 
             OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
-            String json = String.format("[%s]", gson.toJson(updateDTO));
+            String json = String.format("%s", gson.toJson(updateDTO));
             Log.d(Constants.LOG, "Sending " + json);
             out.write(json.getBytes());
             out.flush();

@@ -150,8 +150,7 @@ public class MotionService extends Service implements SensorEventListener {
             final UpdateDTO updateDTO = new UpdateDTO(
                     location.getLatitude(),
                     location.getLongitude(),
-                    DeviceInfo.getBatteryLevel(MotionService.this),
-                    System.currentTimeMillis());
+                    DeviceInfo.getBatteryLevel(MotionService.this));
 
             if (!TextUtils.isEmpty(trackerId) && DeviceInfo.isOnline(MotionService.this)) {
                 return API.upload(this.trackerId, updateDTO);
@@ -191,6 +190,10 @@ public class MotionService extends Service implements SensorEventListener {
         }
 
         return Service.START_STICKY;
+    }
+
+    public boolean isListening() {
+        return mIsListening;
     }
 
     private void toast(final String text, final int length) {
@@ -246,6 +249,8 @@ public class MotionService extends Service implements SensorEventListener {
         double a = Math.round(Math.sqrt(Math.pow(x, 2) +
                 Math.pow(y, 2) +
                 Math.pow(z, 2)));
+
+        Log.d(Constants.LOG, "onSensorChanged a = " + a + " time = " + (System.currentTimeMillis() - lastUploadTimestamp) + " tracker_id = " + readTrackerId());
 
         if (a > 1.0) {
 
